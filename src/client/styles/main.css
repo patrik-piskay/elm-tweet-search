@@ -21,8 +21,6 @@ ul.user-results {
 ul.user-results li {
     dispay: block;
     width: 100%;
-    height: 30px;
-    line-height: 30px;
     padding: 10px 0;
     font-size: 1.5em;
     text-align: center;
@@ -31,6 +29,19 @@ ul.user-results li {
     border: 1px solid #C7C7C7;
     border-top: none;
     color: #4E4E4E;
+}
+
+ul.user-results li img {
+    border-radius: 10px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+ul.user-results li span {
+    display: inline-block;
+    position: relative;
+    top: 2px;
+    padding-left: 10px;
 }
 
 ul.user-results li:hover {

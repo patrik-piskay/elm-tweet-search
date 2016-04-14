@@ -13,12 +13,14 @@ import Task
 type alias Model =
     { users : Maybe (List UserModel)
     , userSearchInput : String
+    , noUserFound : Bool
     }
 
 model : Model
 model =
     { users = Nothing
     , userSearchInput = ""
+    , noUserFound = False
     }
 
 init : (Model, Effects Action)
@@ -55,9 +57,15 @@ update action model =
         SearchUser ->
             (model, getUser model.userSearchInput)
         UserSearchResult result ->
-            let
-                newModel = { model | users = result }
-            in (newModel, Effects.none)
+            case result of
+                Just result ->
+                    let
+                        newModel = { model | users = Just result, noUserFound = False }
+                    in (newModel, Effects.none)
+                Nothing ->
+                    let
+                        newModel = { model | noUserFound = True }
+                    in (newModel, Effects.none)
 
 -- VIEW
 
@@ -75,36 +83,40 @@ view address model =
             []
         , ul
             [ class "user-results" ]
-            (List.map
-                (\user -> li [] [ text user.name ])
-                (Maybe.withDefault [] model.users)
+            ( case model.users of
+                Nothing ->
+                    if model.noUserFound
+                        then [ text "No user found" ]
+                        else []
+                Just users ->
+                    List.map
+                        (\user -> li [] [ renderUserRecord user ])
+                        (Maybe.withDefault [] model.users)
             )
+        ]
+
+renderUserRecord : UserModel -> Html
+renderUserRecord user =
+    div []
+        [ img [src user.profile_img] []
+        , span [] [ text user.name ]
         ]
 
 -- EFFECTS
 
 getUser : String -> Effects Action
 getUser username =
-    Http.fromJson getUserDetails (getUserRequest username)
+    Http.get getUserDetails ("http://localhost:3000/api/users/lookup.json?screen_name=" ++ username)
         |> Task.toMaybe
         |> Task.map UserSearchResult
         |> Effects.task
 
-getUserRequest : String -> Task.Task Http.RawError Http.Response
-getUserRequest username =
-    Http.send Http.defaultSettings
-        { verb = "GET"
-        , url = "http://localhost:3000/api/users/lookup.json?screen_name=" ++ username
-        , headers = []
-        , body = Http.empty
-        }
-
 getUserDetails : Json.Decoder (List UserModel)
 getUserDetails =
-    Json.list (Json.object2 UserModel
+    Json.object2 UserModel
         ("name" := Json.string)
         ("profile_image_url" := Json.string)
-    )
+    |> Json.list
 
 isEnter : Int -> Result String ()
 isEnter code =
