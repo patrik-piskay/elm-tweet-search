@@ -12,16 +12,20 @@ import Task
 type alias Model =
     { user : UserModel
     , tweetSearchInput : String
-    , tweetsResult : Maybe (List TweetModel)
-    , noTweetFound : Bool
+    , tweets : RemoteData (List TweetModel)
     }
+
+type RemoteData a
+    = NotAsked
+    | Loading
+    | Failure Http.Error
+    | Success a
 
 model : Model
 model =
     { user = UserModel 1 "Patrik Piskay" "Patrik Piskay" "http://pbs.twimg.com/profile_images/662217947281268736/AA5_5qq1_normal.png"
     , tweetSearchInput = ""
-    , tweetsResult = Nothing
-    , noTweetFound = False
+    , tweets = NotAsked
     }
 
 init : (Model, Cmd Action)
@@ -51,12 +55,13 @@ type RetweetedStatus = RetweetedStatus TweetModel
 
 -- UPDATE
 
-type Action =
-    NoOp
+type Action
+    = NoOp
     | UpdateTweetSearchValue String
     | SearchTweets
     | TweetSearchResult (List TweetModel)
-    | NoTweetsFound Http.Error
+    -- | NoTweetsFound
+    | HttpError Http.Error
 
 update : Action -> Model -> (Model, Cmd Action)
 update action model =
@@ -68,17 +73,21 @@ update action model =
             in
                 (newModel, Cmd.none)
         SearchTweets ->
-            (model, getTweets model.tweetSearchInput)
+            let
+                newModel = { model | tweets = Loading }
+            in
+                (newModel, getTweets model.tweetSearchInput)
         TweetSearchResult result ->
             let
-                h = Debug.log "success" result
-                newModel = { model | tweetsResult = Just result, noTweetFound = False }
-            in (newModel, Cmd.none)
-        NoTweetsFound er ->
+                newModel = { model | tweets = Success result }
+            in
+                (newModel, Cmd.none)
+        HttpError err ->
             let
-                h = Debug.log "err" er
-                newModel = { model | tweetsResult = Nothing, noTweetFound = True }
-            in (newModel, Cmd.none)
+                _ = Debug.log "err" err
+                newModel = { model | tweets = Failure err }
+            in
+                (newModel, Cmd.none)
 
 -- VIEW
 
@@ -95,17 +104,21 @@ view model =
             ]
             []
         , ul
-            [ class "user-results" ]
-            ( case model.tweetsResult of
-                Nothing ->
-                    if model.noTweetFound
-                        then [ div [ class "no-user-found" ] [ text "No tweets found" ]]
-                        else []
-                Just tweets ->
-                    let t = Debug.log "tweets" tweets in
-                    List.map
-                        (\tweet -> li [] [ renderTweet tweet ])
-                        (Maybe.withDefault [] model.tweetsResult)
+            [ class "tweet-results" ]
+            ( case model.tweets of
+                NotAsked ->
+                    []
+                Loading ->
+                    [ div [] [ text "Loading..." ] ]
+                Failure err ->
+                    [ div [ class "error" ] [ text "Could not load data" ]]
+                Success tweets ->
+                    if not (List.isEmpty tweets)
+                        then List.map
+                            (\tweet -> li [] [ renderTweet tweet ])
+                            tweets
+                        else
+                            [ div [ class "no-tweets-found" ] [ text "No tweets found" ]]
             )
         ]
 
@@ -115,29 +128,21 @@ renderTweet tweet =
         [ span [] [ text tweet.text ]
         ]
 
--- EFFECTS
+-- TASKS
 
 getTweets : String -> Cmd Action
 getTweets searchValue =
     let
         request = Http.get decodeTweets ("http://localhost:3000/api/statuses/user_timeline.json?screen_name=" ++ searchValue)
     in
-        Task.perform NoTweetsFound TweetSearchResult request
+        Task.perform HttpError TweetSearchResult request
 
 decodeTweets : Json.Decoder (List TweetModel)
 decodeTweets =
-    tweetDetails |> Json.list
-
-retweetStatusDecoder : Json.Decoder TweetModel
-retweetStatusDecoder =
-    Json.object7 TweetModel
-        ("id" := Json.float)
-        ("text" := Json.string)
-        ("user" := tweetUserDetails)
-        (Json.maybe ("in_reply_to_status_id" := Json.float))
-        (Json.maybe ("in_reply_to_user_id" := Json.float))
-        (Json.maybe ("in_reply_to_screen_name" := Json.string))
-        (Json.succeed Nothing)
+    Json.oneOf
+        [ Json.list tweetDetails
+        , Json.succeed []
+        ]
 
 tweetDetails : Json.Decoder TweetModel
 tweetDetails =
@@ -148,7 +153,12 @@ tweetDetails =
         (Json.maybe ("in_reply_to_status_id" := Json.float))
         (Json.maybe ("in_reply_to_user_id" := Json.float))
         (Json.maybe ("in_reply_to_screen_name" := Json.string))
-        (Json.maybe ("retweeted_status" := retweetStatusDecoder |> Json.map RetweetedStatus))
+        (Json.maybe ("retweeted_status" := lazy (\_ -> tweetDetails) |> Json.map RetweetedStatus))
+
+lazy : (() -> Json.Decoder a) -> Json.Decoder a
+lazy thunk =
+    Json.customDecoder Json.value
+        (\value -> Json.decodeValue (thunk ()) value)
 
 tweetUserDetails : Json.Decoder UserModel
 tweetUserDetails =
