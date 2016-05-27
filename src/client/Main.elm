@@ -1,24 +1,14 @@
-module App where
+module App exposing (..)
 
-import StartApp
-import Html
-import Task
-import Effects exposing (Never)
-import TwitterSearch exposing (init, update, view)
+import Html.App as Html
+-- import UserSearch exposing (init, update, view)
+import TweetSearch exposing (init, update, view)
 
-app : StartApp.App TwitterSearch.Model
-app =
-    StartApp.start
+main : Program Never
+main =
+    Html.program
         { init = init
         , update = update
         , view = view
-        , inputs = []
+        , subscriptions = \_ -> Sub.none
         }
-
-main : Signal Html.Html
-main =
-    app.html
-
-port tasks : Signal (Task.Task Never ())
-port tasks =
-    app.tasks

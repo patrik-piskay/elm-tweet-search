@@ -1,6 +1,5 @@
-module TwitterSearch where
+module UserSearch exposing (..)
 
-import Effects exposing (Effects, Never)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -23,10 +22,10 @@ model =
     , noUserFound = False
     }
 
-init : (Model, Effects Action)
+init : (Model, Cmd Action)
 init =
     ( model
-    , Effects.none
+    , Cmd.none
     )
 
 type alias UserModel =
@@ -43,42 +42,41 @@ type Action =
     NoOp
     | UpdateUserSearch String
     | SearchUser
-    | UserSearchResult (Maybe (List UserModel))
+    | UserSearchResult (List UserModel)
+    | NoUserFound Http.Error
 
-update : Action -> Model -> (Model, Effects Action)
+update : Action -> Model -> (Model, Cmd Action)
 update action model =
     case action of
-        NoOp -> (model, Effects.none)
+        NoOp -> (model, Cmd.none)
         UpdateUserSearch value ->
             let
                 newModel = { model | userSearchInput = value }
             in
-                (newModel, Effects.none)
+                (newModel, Cmd.none)
         SearchUser ->
             (model, getUser model.userSearchInput)
         UserSearchResult result ->
-            case result of
-                Just result ->
-                    let
-                        newModel = { model | users = Just result, noUserFound = False }
-                    in (newModel, Effects.none)
-                Nothing ->
-                    let
-                        newModel = { model | noUserFound = True }
-                    in (newModel, Effects.none)
+            let
+                newModel = { model | users = Just result, noUserFound = False }
+            in (newModel, Cmd.none)
+        NoUserFound _ ->
+            let
+                newModel = { model | users = Nothing, noUserFound = True }
+            in (newModel, Cmd.none)
 
 -- VIEW
 
-view : Signal.Address Action -> Model -> Html
-view address model =
+view : Model -> Html Action
+view model =
     div []
         [ input
             [ type' "text"
             , placeholder "Twitter username"
             , value model.userSearchInput
             , class "user-search-input"
-            , on "input" targetValue (\value -> Signal.message address (UpdateUserSearch value))
-            , on "keypress" (Json.customDecoder keyCode isEnter) (\_ -> Signal.message address SearchUser)
+            , onInput UpdateUserSearch
+            , on "keypress" (Json.map (always SearchUser) (Json.customDecoder keyCode isEnter))
             ]
             []
         , ul
@@ -86,7 +84,7 @@ view address model =
             ( case model.users of
                 Nothing ->
                     if model.noUserFound
-                        then [ text "No user found" ]
+                        then [ div [ class "no-user-found" ] [ text "No user found" ]]
                         else []
                 Just users ->
                     List.map
@@ -95,7 +93,7 @@ view address model =
             )
         ]
 
-renderUserRecord : UserModel -> Html
+renderUserRecord : UserModel -> Html Action
 renderUserRecord user =
     div []
         [ img [src user.profile_img] []
@@ -104,12 +102,12 @@ renderUserRecord user =
 
 -- EFFECTS
 
-getUser : String -> Effects Action
+getUser : String -> Cmd Action
 getUser username =
-    Http.get getUserDetails ("http://localhost:3000/api/users/lookup.json?screen_name=" ++ username)
-        |> Task.toMaybe
-        |> Task.map UserSearchResult
-        |> Effects.task
+    let
+        request = Http.get getUserDetails ("http://localhost:3000/api/users/lookup.json?screen_name=" ++ username)
+    in
+        Task.perform NoUserFound UserSearchResult request
 
 getUserDetails : Json.Decoder (List UserModel)
 getUserDetails =
@@ -121,8 +119,3 @@ getUserDetails =
 isEnter : Int -> Result String ()
 isEnter code =
     if code == 13 then Ok () else Err "Not enter pressed"
-
--- WIRING
-
-userQuery : Signal.Mailbox String
-userQuery = Signal.mailbox ""

@@ -47,3 +47,10 @@ ul.user-results li span {
 ul.user-results li:hover {
     background-color: #EFEFEF;
 }
+
+.no-user-found {
+    text-align: center;
+    padding: 1em;
+    font-size: 1.3em;
+    color: grey;
+}
