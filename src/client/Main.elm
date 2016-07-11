@@ -1,8 +1,9 @@
 module App exposing (..)
 
 import Html.App as Html
--- import UserSearch exposing (init, update, view)
+--import UserSearch exposing (init, update, view)
 import TweetSearch exposing (init, update, view)
+
 
 main : Program Never
 main =

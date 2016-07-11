@@ -3,3 +3,4 @@ node_modules/
 build/*
 elm.js
 .on-save.json
+*.log
