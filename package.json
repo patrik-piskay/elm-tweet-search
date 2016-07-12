@@ -7,10 +7,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/server/index.js"
   },
-  "author": "",
+  "author": "Patrik Piskay",
   "license": "ISC",
+  "engines" : {
+      "node" : ">=5"
+  },
   "dependencies": {
     "express": "^4.13.4",
+    "fuse": "^0.4.0",
     "node-fetch": "^1.5.1"
   }
 }

@@ -1,24 +1,22 @@
-var express = require('express');
-var fetch = require('node-fetch');
-var path = require('path');
-var queryString = require('querystring');
+const express = require('express');
+const fetch = require('node-fetch');
+const path = require('path');
+const queryString = require('querystring');
 
-var app = express();
+const app = express();
 
 app.use(express.static(path.resolve(__dirname + '/../../')));
 
 app.use('/api', function(req, res) {
-    fetch('https://api.twitter.com/1.1' + req.path + '?' + queryString.stringify(req.query), {
+    fetch(`https://api.twitter.com/1.1${req.path}?${queryString.stringify(req.query)}`, {
         method: req.method,
         headers: {
-            "Authorization": "Bearer AAAAAAAAAAAAAAAAAAAAAJR5ugAAAAAAYs%2BlOKeM3f4ftYKUfZqn3ohbuVQ%3DOAxp4zKeDh4g2DHXLXM92BFc48FOnQGWxMswOz6i7qvhSNtdfY",
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+            'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAAJR5ugAAAAAAYs%2BlOKeM3f4ftYKUfZqn3ohbuVQ%3DOAxp4zKeDh4g2DHXLXM92BFc48FOnQGWxMswOz6i7qvhSNtdfY',
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
         }
     })
-    .then(function(res) { return res.json();})
-    .then(function(json) {
-        res.json(json)
-    });
+    .then(apiResponse => apiResponse.json())
+    .then(json => res.json(json));
 })
 
 app.listen(3000, function() {

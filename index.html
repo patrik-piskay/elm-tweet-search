@@ -9,6 +9,11 @@
     <body>
         <script type="text/javascript">
             var app = Elm.App.fullscreen();
+
+            app.ports.filterTweets.subscribe(function(tweets) {
+                var filteredTweets = tweets;
+                app.ports.filteredTweets.send(filteredTweets);
+            });
         </script>
     </body>
 </html>

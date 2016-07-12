@@ -12,7 +12,7 @@ import Task
 
 
 type alias Model =
-    { users : Maybe (List UserModel)
+    { user : Maybe UserModel
     , userSearchInput : String
     , noUserFound : Bool
     }
@@ -20,7 +20,7 @@ type alias Model =
 
 model : Model
 model =
-    { users = Nothing
+    { user = Nothing
     , userSearchInput = ""
     , noUserFound = False
     }
@@ -35,6 +35,7 @@ init =
 
 type alias UserModel =
     { name : String
+    , screen_name : String
     , profile_img : String
     }
 
@@ -73,16 +74,21 @@ update action model =
             ( model, getUser model.userSearchInput )
 
         UserSearchResult result ->
-            let
-                newModel =
-                    { model | users = Just result, noUserFound = False }
-            in
-                ( newModel, Cmd.none )
+            case result of
+                [] ->
+                    ( model, Cmd.none )
+
+                user :: _ ->
+                    let
+                        newModel =
+                            { model | user = Just user, noUserFound = False }
+                    in
+                        ( newModel, Cmd.none )
 
         NoUserFound _ ->
             let
                 newModel =
-                    { model | users = Nothing, noUserFound = True }
+                    { model | user = Nothing, noUserFound = True }
             in
                 ( newModel, Cmd.none )
 
@@ -105,17 +111,15 @@ view model =
             []
         , ul
             [ class "user-results" ]
-            (case model.users of
+            (case model.user of
                 Nothing ->
                     if model.noUserFound then
                         [ div [ class "no-user-found" ] [ text "No user found" ] ]
                     else
                         []
 
-                Just users ->
-                    List.map
-                        (\user -> li [] [ renderUserRecord user ])
-                        (Maybe.withDefault [] model.users)
+                Just user ->
+                    [ li [] [ renderUserRecord user ] ]
             )
         ]
 
@@ -143,8 +147,9 @@ getUser username =
 
 getUserDetails : Json.Decoder (List UserModel)
 getUserDetails =
-    Json.object2 UserModel
+    Json.object3 UserModel
         ("name" := Json.string)
+        ("screen_name" := Json.string)
         ("profile_image_url" := Json.string)
         |> Json.list
 
