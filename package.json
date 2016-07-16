@@ -5,16 +5,23 @@
   "main": "src/server/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon src/server/index.js"
+    "start": "nodemon src/server/index.js",
+    "lint": "eslint src --ext js"
   },
   "author": "Patrik Piskay",
   "license": "ISC",
-  "engines" : {
-      "node" : ">=5"
+  "engines": {
+    "node": ">=5"
   },
   "dependencies": {
     "express": "^4.13.4",
     "fuse": "^0.4.0",
     "node-fetch": "^1.5.1"
+  },
+  "devDependencies": {
+    "eslint": "^3.1.0",
+    "eslint-config-airbnb": "^9.0.1",
+    "eslint-plugin-import": "^1.10.3",
+    "eslint-plugin-jsx-a11y": "^2.0.1"
   }
 }
