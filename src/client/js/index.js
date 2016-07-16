@@ -1,7 +1,12 @@
-import Fuse from 'fuse';
+import textFilter from 'text-filter';
 
-export const search = (tweets) => {
-    const fuse = new Fuse(tweets, { keys: ['text'] });
+export const AppJs = {
+    search(tweets, searchTerm) {
+        const result = tweets.filter(textFilter({
+            query: searchTerm,
+            fields: ['text'],
+        }));
 
-    return fuse;
+        return result;
+    },
 };

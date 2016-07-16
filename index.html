@@ -4,15 +4,19 @@
         <meta charset="utf-8">
         <title></title>
         <link rel="stylesheet" href="/src/client/styles/main.css" charset="utf-8">
-        <script src="build/elm.js" charset="utf-8"></script>
-        <script src="src/client/js/index.js" charset="utf-8"></script>
+        <script src="build/elm.bundle.js" charset="utf-8"></script>
+        <script src="build/js.bundle.js" charset="utf-8"></script>
     </head>
     <body>
         <script type="text/javascript">
-            var app = Elm.App.fullscreen();
+            var app = App.fullscreen();
 
-            app.ports.filterTweets.subscribe(function(tweets) {
-                var filteredTweets = tweets;
+            app.ports.filterTweets.subscribe(function(data) {
+                var tweets = data[0];
+                var searchTerm = data[1];
+
+                var filteredTweets = AppJs.search(tweets, searchTerm);
+
                 app.ports.filteredTweets.send(filteredTweets);
             });
         </script>

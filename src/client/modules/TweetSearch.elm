@@ -8,6 +8,7 @@ import Html.Events exposing (..)
 import Json.Decode as Json exposing ((:=))
 import Http
 import Task
+import String
 
 
 -- MODEL
@@ -17,7 +18,7 @@ type alias Model =
     { user : UserModel
     , tweetSearchInput : String
     , tweets : RemoteData (List TweetModel)
-    , filteredTweets : Maybe (List TweetModel)
+    , filteredTweets : List TweetModel
     }
 
 
@@ -33,7 +34,7 @@ model =
     { user = UserModel 1 "Patrik Piskay" "ppiskay" "http://pbs.twimg.com/profile_images/662217947281268736/AA5_5qq1_normal.png"
     , tweetSearchInput = ""
     , tweets = Loading
-    , filteredTweets = Nothing
+    , filteredTweets = []
     }
 
 
@@ -51,7 +52,6 @@ init =
 type Action
     = NoOp
     | UpdateTweetSearchValue String
-    | TweetSearch
     | TweetSearchResult (List TweetModel)
     | HttpError Http.Error
     | FilteredTweets (List TweetModel)
@@ -68,15 +68,12 @@ update action model =
                 newModel =
                     { model | tweetSearchInput = value }
             in
-                ( newModel, Cmd.none )
+                case model.tweets of
+                    Success tweets ->
+                        ( newModel, filterTweets ( tweets, value ) )
 
-        TweetSearch ->
-            case model.tweets of
-                Success tweets ->
-                    ( model, filterTweets tweets )
-
-                _ ->
-                    ( model, Cmd.none )
+                    _ ->
+                        ( newModel, Cmd.none )
 
         TweetSearchResult result ->
             let
@@ -97,10 +94,10 @@ update action model =
 
         FilteredTweets tweets ->
             let
-                _ =
-                    Debug.log "filtered" tweets
+                newModel =
+                    { model | filteredTweets = tweets }
             in
-                ( model, Cmd.none )
+                ( newModel, Cmd.none )
 
 
 
@@ -116,7 +113,6 @@ view model =
             , value model.tweetSearchInput
             , class "user-search-input"
             , onInput UpdateTweetSearchValue
-            , on "keypress" (Json.map (always TweetSearch) (Json.customDecoder keyCode isEnter))
             ]
             []
         , ul
@@ -131,11 +127,18 @@ view model =
                 Failure err ->
                     [ div [ class "error" ] [ text "Could not load data" ] ]
 
-                Success tweets ->
-                    if not (List.isEmpty tweets) then
-                        List.map
-                            (\tweet -> li [] [ renderTweet tweet ])
-                            tweets
+                Success allTweets ->
+                    if not (List.isEmpty allTweets) then
+                        let
+                            tweets' =
+                                if String.isEmpty model.tweetSearchInput then
+                                    allTweets
+                                else
+                                    model.filteredTweets
+                        in
+                            List.map
+                                (\tweet -> li [] [ renderTweet tweet ])
+                                tweets'
                     else
                         [ div [ class "no-tweets-found" ] [ text "No tweets found" ] ]
             )
@@ -214,11 +217,3 @@ tweetUserDetails =
         ("name" := Json.string)
         ("screen_name" := Json.string)
         ("profile_image_url" := Json.string)
-
-
-isEnter : Int -> Result String ()
-isEnter code =
-    if code == 13 then
-        Ok ()
-    else
-        Err "Not enter pressed"
