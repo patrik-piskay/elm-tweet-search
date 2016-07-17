@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing ((:=))
+import Json.Encode
 import Http
 import Task
 import String
@@ -164,7 +165,10 @@ renderTweet tweet =
             , target "blank"
             , class "tweet"
             ]
-            [ span [] [ text tweet.text ]
+            [ span
+                [ property "innerHTML" (Json.Encode.string tweet.text)
+                ]
+                []
             ]
 
 

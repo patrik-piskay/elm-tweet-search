@@ -1,14 +1,11 @@
 module.exports = {
-    entry: {
-        elm: './src/client/Main.elm',
-        js: './src/client/js/index.js',
-    },
+    entry: './src/client/index.js',
     output: {
         path: './build',
-        filename: '[name].bundle.js',
-        libraryTarget: 'umd',
+        filename: 'bundle.js',
     },
     module: {
+        noParse: /\.elm$/,
         loaders: [{
             test: /\.elm$/,
             exclude: [/elm-stuff/, /node-modules/],
@@ -16,7 +13,7 @@ module.exports = {
         }, {
             test: /\.js$/,
             exclude: /node_modules/,
-            loader: 'babel?presets[]=es2015',
+            loader: 'babel?presets[]=es2015&plugins[]=transform-object-rest-spread',
         }],
     }
 };

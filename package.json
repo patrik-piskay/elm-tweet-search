@@ -6,6 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/server/index.js",
+    "build": "webpack",
+    "build:watch": "webpack --watch",
     "lint": "eslint src --ext js"
   },
   "author": "Patrik Piskay",
@@ -14,18 +16,22 @@
     "node": ">=5"
   },
   "dependencies": {
+    "eslint-plugin-react": "^5.2.2",
     "express": "^4.13.4",
+    "node-fetch": "^1.5.3",
     "text-filter": "^0.1.1"
   },
   "devDependencies": {
     "babel-core": "^6.10.4",
     "babel-loader": "^6.2.4",
+    "babel-plugin-transform-object-rest-spread": "^6.8.0",
     "babel-preset-es2015": "^6.9.0",
     "elm-webpack-loader": "^3.0.3",
     "eslint": "^3.1.0",
     "eslint-config-airbnb": "^9.0.1",
     "eslint-plugin-import": "^1.10.3",
     "eslint-plugin-jsx-a11y": "^2.0.1",
+    "nodemon": "^1.9.2",
     "webpack": "^1.13.1"
   }
 }
