@@ -1,8 +1,8 @@
 module App exposing (..)
 
 import Html.App as Html
---import UserSearch exposing (init, update, view)
-import TweetSearch exposing (init, update, view, subscriptions)
+import UserSearch exposing (init, update, view)
+-- import TweetSearch exposing (init, update, view, subscriptions)
 
 
 main : Program Never
@@ -11,5 +11,5 @@ main =
         { init = init
         , update = update
         , view = view
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none--subscriptions
         }

@@ -51,8 +51,7 @@ init =
 
 
 type Action
-    = NoOp
-    | UpdateTweetSearchValue String
+    = UpdateTweetSearchValue String
     | TweetSearchResult (List TweetModel)
     | HttpError Http.Error
     | FilteredTweets (List TweetModel)
@@ -61,9 +60,6 @@ type Action
 update : Action -> Model -> ( Model, Cmd Action )
 update action model =
     case action of
-        NoOp ->
-            ( model, Cmd.none )
-
         UpdateTweetSearchValue value ->
             let
                 newModel =
@@ -189,7 +185,7 @@ getTweets : UserModel -> Cmd Action
 getTweets user =
     let
         request =
-            Http.get decodeTweets ("http://localhost:3000/api/statuses/user_timeline.json?screen_name=" ++ user.screenName ++ "&count=200")
+            Http.get decodeTweets ("//localhost:3000/api/statuses/user_timeline.json?screen_name=" ++ user.screenName ++ "&count=200")
     in
         Task.perform HttpError TweetSearchResult request
 

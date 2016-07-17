@@ -45,7 +45,8 @@ ul.user-results li span {
 }
 
 ul.user-results li:hover {
-    background-color: #EFEFEF;
+    background-color: #55acee;
+    color: white;
 }
 
 .no-user-found {
@@ -55,9 +56,14 @@ ul.user-results li:hover {
     color: grey;
 }
 
-.loading {
+.loading,
+.error {
     text-align: center;
     padding: 20px;
+}
+
+.error {
+    color: red;
 }
 
 ul.tweet-results {

@@ -12,17 +12,22 @@ import Task
 
 
 type alias Model =
-    { user : Maybe UserModel
+    { user : RemoteData UserModel
     , userSearchInput : String
-    , noUserFound : Bool
     }
+
+
+type RemoteData a
+    = NotAsked
+    | Loading
+    | Failure
+    | Success a
 
 
 model : Model
 model =
-    { user = Nothing
+    { user = NotAsked
     , userSearchInput = ""
-    , noUserFound = False
     }
 
 
@@ -40,18 +45,12 @@ type alias UserModel =
     }
 
 
-userModel : Maybe UserModel
-userModel =
-    Nothing
-
-
 
 -- UPDATE
 
 
 type Action
-    = NoOp
-    | UpdateUserSearch String
+    = UpdateUserSearch String
     | SearchUser
     | UserSearchResult (List UserModel)
     | NoUserFound Http.Error
@@ -60,9 +59,6 @@ type Action
 update : Action -> Model -> ( Model, Cmd Action )
 update action model =
     case action of
-        NoOp ->
-            ( model, Cmd.none )
-
         UpdateUserSearch value ->
             let
                 newModel =
@@ -71,7 +67,11 @@ update action model =
                 ( newModel, Cmd.none )
 
         SearchUser ->
-            ( model, getUser model.userSearchInput )
+            let
+                newModel =
+                    { model | user = Loading }
+            in
+                ( newModel, getUser model.userSearchInput )
 
         UserSearchResult result ->
             case result of
@@ -81,14 +81,14 @@ update action model =
                 user :: _ ->
                     let
                         newModel =
-                            { model | user = Just user, noUserFound = False }
+                            { model | user = Success user }
                     in
                         ( newModel, Cmd.none )
 
         NoUserFound _ ->
             let
                 newModel =
-                    { model | user = Nothing, noUserFound = True }
+                    { model | user = Failure }
             in
                 ( newModel, Cmd.none )
 
@@ -112,13 +112,16 @@ view model =
         , ul
             [ class "user-results" ]
             (case model.user of
-                Nothing ->
-                    if model.noUserFound then
-                        [ div [ class "no-user-found" ] [ text "No user found" ] ]
-                    else
-                        []
+                NotAsked ->
+                    []
 
-                Just user ->
+                Loading ->
+                    [ div [ class "loading" ] [ text "Loading..." ] ]
+
+                Failure ->
+                    [ div [ class "no-user-found" ] [ text "No user found" ] ]
+
+                Success user ->
                     [ li [] [ renderUserRecord user ] ]
             )
         ]
