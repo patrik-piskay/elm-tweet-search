@@ -6,10 +6,15 @@ Search in tweets of a selected user - simple app created for purpose of learning
 
 ### How to start
 
-  First, build Elm and JavaScript modules to one bundle
+  Install dependencies
+
+    npm install
+    elm package install
+
+  Build Elm and JavaScript modules to one bundle
 
     npm run build
 
-  Second, start the server
+  Start the server
 
     npm run start
