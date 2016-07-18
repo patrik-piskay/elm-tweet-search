@@ -208,7 +208,7 @@ getTweets : UserModel -> Cmd Action
 getTweets user =
     let
         request =
-            Http.get decodeTweets ("//localhost:3000/api/statuses/user_timeline.json?screen_name=" ++ user.screenName ++ "&count=200")
+            Http.get decodeTweets ("/api/statuses/user_timeline.json?screen_name=" ++ user.screenName ++ "&count=200")
     in
         Task.perform HttpError TweetSearchResult request
 

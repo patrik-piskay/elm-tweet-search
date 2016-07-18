@@ -1,11 +1,13 @@
 {
-  "name": "twitter-search",
+  "name": "tweet-search",
   "version": "1.0.0",
-  "description": "",
+  "description": "Search in tweets of a selected twitter user",
+  "repository": "https://github.com/patrik-piskay/tweets-search.git",
   "main": "src/server/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon src/server/index.js",
+    "start": "node src/server/index.js",
+    "start:dev": "nodemon src/server/index.js",
     "build": "webpack",
     "build:watch": "webpack --watch",
     "lint": "eslint src --ext js"

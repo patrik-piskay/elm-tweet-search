@@ -134,7 +134,7 @@ getUser : String -> Cmd Action
 getUser username =
     let
         request =
-            Http.get getUserDetails ("http://localhost:3000/api/users/lookup.json?screen_name=" ++ username)
+            Http.get getUserDetails ("/api/users/lookup.json?screen_name=" ++ username)
     in
         Task.perform NoUserFound UserSearchResult request
 
@@ -150,7 +150,7 @@ decodeUserDetails =
         ("id" := Json.float)
         ("name" := Json.string)
         ("screen_name" := Json.string)
-        ("profile_image_url" := Json.string)
+        ("profile_image_url_https" := Json.string)
 
 
 isEnter : Int -> Result String ()

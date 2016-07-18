@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
-    "summary": "helpful summary of your project, less than 80 characters",
-    "repository": "https://github.com/user/project.git",
+    "summary": "Search in tweets of a selected twitter user",
+    "repository": "https://github.com/patrik-piskay/tweets-search.git",
     "license": "BSD3",
     "source-directories": [
         "src/client",
