@@ -1,6 +1,7 @@
 module TweetSearch exposing (..)
 
 import Models exposing (..)
+import UserSearch exposing (decodeUserDetails)
 import Ports exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,23 +17,16 @@ import String
 
 
 type alias Model =
-    { user : UserModel
+    { user : Maybe UserModel
     , tweetSearchInput : String
     , tweets : RemoteData (List TweetModel)
     , filteredTweets : List TweetModel
     }
 
 
-type RemoteData a
-    = NotAsked
-    | Loading
-    | Failure Http.Error
-    | Success a
-
-
 model : Model
 model =
-    { user = UserModel 1 "Patrik Piskay" "ppiskay" "http://pbs.twimg.com/profile_images/662217947281268736/AA5_5qq1_normal.png"
+    { user = Nothing
     , tweetSearchInput = ""
     , tweets = Loading
     , filteredTweets = []
@@ -42,7 +36,7 @@ model =
 init : ( Model, Cmd Action )
 init =
     ( model
-    , getTweets model.user
+    , Cmd.none
     )
 
 
@@ -51,7 +45,9 @@ init =
 
 
 type Action
-    = UpdateTweetSearchValue String
+    = Reset
+    | SetUser UserModel
+    | UpdateTweetSearchValue String
     | TweetSearchResult (List TweetModel)
     | HttpError Http.Error
     | FilteredTweets (List TweetModel)
@@ -60,6 +56,16 @@ type Action
 update : Action -> Model -> ( Model, Cmd Action )
 update action model =
     case action of
+        Reset ->
+            init
+
+        SetUser user ->
+            let
+                newModel =
+                    { model | user = Just user }
+            in
+                ( newModel, getTweets user )
+
         UpdateTweetSearchValue value ->
             let
                 newModel =
@@ -103,43 +109,60 @@ update action model =
 
 view : Model -> Html Action
 view model =
-    div []
-        [ input
-            [ type' "text"
-            , placeholder "Tweet search"
-            , value model.tweetSearchInput
-            , class "user-search-input"
-            , onInput UpdateTweetSearchValue
-            ]
-            []
-        , ul
-            [ class "tweet-results" ]
-            (case model.tweets of
-                NotAsked ->
-                    []
+    case model.user of
+        Just user ->
+            div []
+                [ div []
+                    [ div [ class "user" ]
+                        [ span
+                            [ onClick Reset
+                            , class "reset"
+                            , property "innerHTML" (Json.Encode.string "&laquo;")
+                            ]
+                            []
+                        , img [ src user.profileImg ] []
+                        , span [] [ text user.name ]
+                        ]
+                    , input
+                        [ type' "text"
+                        , placeholder "Tweet search"
+                        , value model.tweetSearchInput
+                        , class "tweet-search-input"
+                        , onInput UpdateTweetSearchValue
+                        ]
+                        []
+                    ]
+                , ul
+                    [ class "tweet-results" ]
+                    (case model.tweets of
+                        NotAsked ->
+                            []
 
-                Loading ->
-                    [ div [ class "loading" ] [ text "Loading..." ] ]
+                        Loading ->
+                            [ div [ class "loading" ] [ text "Loading..." ] ]
 
-                Failure err ->
-                    [ div [ class "error" ] [ text "Could not load data" ] ]
+                        Failure err ->
+                            [ div [ class "error" ] [ text "Could not load data" ] ]
 
-                Success allTweets ->
-                    if not (List.isEmpty allTweets) then
-                        let
-                            tweets' =
-                                if String.isEmpty model.tweetSearchInput then
-                                    allTweets
-                                else
-                                    model.filteredTweets
-                        in
-                            List.map
-                                (\tweet -> li [] [ renderTweet tweet ])
-                                tweets'
-                    else
-                        [ div [ class "no-tweets-found" ] [ text "No tweets found" ] ]
-            )
-        ]
+                        Success allTweets ->
+                            if not (List.isEmpty allTweets) then
+                                let
+                                    tweets' =
+                                        if String.isEmpty model.tweetSearchInput then
+                                            allTweets
+                                        else
+                                            model.filteredTweets
+                                in
+                                    List.map
+                                        (\tweet -> li [] [ renderTweet tweet ])
+                                        tweets'
+                            else
+                                [ div [ class "no-tweets-found" ] [ text "No tweets found" ] ]
+                    )
+                ]
+
+        Nothing ->
+            div [] []
 
 
 renderTweet : TweetModel -> Html Action
@@ -147,11 +170,11 @@ renderTweet tweet =
     let
         userName =
             case tweet.retweetedUserName of
-                Nothing ->
-                    tweet.user.screenName
-
                 Just name ->
                     name
+
+                Nothing ->
+                    tweet.user.screenName
 
         url =
             "https://twitter.com/" ++ userName ++ "/status/" ++ tweet.id
@@ -193,27 +216,18 @@ getTweets user =
 decodeTweets : Json.Decoder (List TweetModel)
 decodeTweets =
     Json.oneOf
-        [ Json.list tweetDetails
+        [ Json.list decodeTweetDetails
         , Json.succeed []
         ]
 
 
-tweetDetails : Json.Decoder TweetModel
-tweetDetails =
+decodeTweetDetails : Json.Decoder TweetModel
+decodeTweetDetails =
     Json.object7 TweetModel
         ("id_str" := Json.string)
         ("text" := Json.string)
-        ("user" := tweetUserDetails)
+        ("user" := decodeUserDetails)
         (Json.maybe ("in_reply_to_status_id" := Json.float))
         (Json.maybe ("in_reply_to_user_id" := Json.float))
         (Json.maybe ("in_reply_to_screen_name" := Json.string))
         (Json.maybe (Json.at [ "retweeted_status", "user", "screen_name" ] Json.string))
-
-
-tweetUserDetails : Json.Decoder UserModel
-tweetUserDetails =
-    Json.object4 UserModel
-        ("id" := Json.float)
-        ("name" := Json.string)
-        ("screen_name" := Json.string)
-        ("profile_image_url" := Json.string)

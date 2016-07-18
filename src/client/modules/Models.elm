@@ -1,5 +1,14 @@
 module Models exposing (..)
 
+import Http
+
+
+type RemoteData a
+    = NotAsked
+    | Loading
+    | Failure Http.Error
+    | Success a
+
 
 type alias UserModel =
     { id : Float

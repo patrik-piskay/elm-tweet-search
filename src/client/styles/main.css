@@ -12,6 +12,39 @@ html, body {
     text-align: center;
 }
 
+.user {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: white;
+}
+
+.user img {
+    padding: 7px 10px;
+    float: left;
+}
+
+.user span {
+    position: relative;
+    float: left;
+    line-height: 60px;
+    font-size: 1.5em;
+}
+
+.user .reset {
+    display: inline-block;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.tweet-search-input {
+    width: 100%;
+    height: 40px;
+    padding: 10px 0;
+    font-size: 2em;
+    text-align: center;
+}
+
 ul.user-results {
     list-style: none;
     padding: 0;

@@ -1,5 +1,6 @@
 module UserSearch exposing (..)
 
+import Models exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -17,13 +18,6 @@ type alias Model =
     }
 
 
-type RemoteData a
-    = NotAsked
-    | Loading
-    | Failure
-    | Success a
-
-
 model : Model
 model =
     { user = NotAsked
@@ -38,19 +32,13 @@ init =
     )
 
 
-type alias UserModel =
-    { name : String
-    , screen_name : String
-    , profile_img : String
-    }
-
-
 
 -- UPDATE
 
 
 type Action
-    = UpdateUserSearch String
+    = Reset
+    | UpdateUserSearch String
     | SearchUser
     | UserSearchResult (List UserModel)
     | NoUserFound Http.Error
@@ -59,6 +47,9 @@ type Action
 update : Action -> Model -> ( Model, Cmd Action )
 update action model =
     case action of
+        Reset ->
+            init
+
         UpdateUserSearch value ->
             let
                 newModel =
@@ -85,10 +76,10 @@ update action model =
                     in
                         ( newModel, Cmd.none )
 
-        NoUserFound _ ->
+        NoUserFound err ->
             let
                 newModel =
-                    { model | user = Failure }
+                    { model | user = Failure err }
             in
                 ( newModel, Cmd.none )
 
@@ -118,7 +109,7 @@ view model =
                 Loading ->
                     [ div [ class "loading" ] [ text "Loading..." ] ]
 
-                Failure ->
+                Failure _ ->
                     [ div [ class "no-user-found" ] [ text "No user found" ] ]
 
                 Success user ->
@@ -130,13 +121,13 @@ view model =
 renderUserRecord : UserModel -> Html Action
 renderUserRecord user =
     div []
-        [ img [ src user.profile_img ] []
+        [ img [ src user.profileImg ] []
         , span [] [ text user.name ]
         ]
 
 
 
--- EFFECTS
+-- TASKS
 
 
 getUser : String -> Cmd Action
@@ -150,11 +141,16 @@ getUser username =
 
 getUserDetails : Json.Decoder (List UserModel)
 getUserDetails =
-    Json.object3 UserModel
+    decodeUserDetails |> Json.list
+
+
+decodeUserDetails : Json.Decoder UserModel
+decodeUserDetails =
+    Json.object4 UserModel
+        ("id" := Json.float)
         ("name" := Json.string)
         ("screen_name" := Json.string)
         ("profile_image_url" := Json.string)
-        |> Json.list
 
 
 isEnter : Int -> Result String ()
