@@ -1,6 +1,6 @@
 elm-stuff/
 node_modules/
-build/*
+build
 elm.js
 .on-save.json
 *.log
