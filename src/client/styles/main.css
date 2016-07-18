@@ -82,7 +82,8 @@ ul.user-results li:hover {
     color: white;
 }
 
-.no-user-found {
+.no-user-found,
+.no-tweets-found {
     text-align: center;
     padding: 1em;
     font-size: 1.3em;

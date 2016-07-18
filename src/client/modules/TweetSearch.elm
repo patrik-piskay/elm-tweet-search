@@ -125,7 +125,7 @@ view model =
                         ]
                     , input
                         [ type' "text"
-                        , placeholder "Tweet search"
+                        , placeholder "Search in tweets..."
                         , value model.tweetSearchInput
                         , class "tweet-search-input"
                         , onInput UpdateTweetSearchValue
@@ -139,7 +139,7 @@ view model =
                             []
 
                         Loading ->
-                            [ div [ class "loading" ] [ text "Loading..." ] ]
+                            [ div [ class "loading" ] [ text "Loading tweets ..." ] ]
 
                         Failure err ->
                             [ div [ class "error" ] [ text "Could not load data" ] ]

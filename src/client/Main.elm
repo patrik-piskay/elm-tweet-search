@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.App as Html
 import UserSearch exposing (..)
 import TweetSearch exposing (..)
+import Models exposing (..)
 
 
 type alias Model =
@@ -39,7 +40,7 @@ update action model =
 
                 ( newTweetModel, newTweetCmd ) =
                     case newUserModel.user of
-                        UserSearch.Success user ->
+                        Success user ->
                             TweetSearch.update (TweetSearch.SetUser user) model.tweetSearch
 
                         _ ->
@@ -97,7 +98,7 @@ update action model =
 view : Model -> Html Action
 view model =
     case model.userSearch.user of
-        UserSearch.Success user ->
+        Success user ->
             Html.map Tweets <| TweetSearch.view model.tweetSearch
 
         _ ->

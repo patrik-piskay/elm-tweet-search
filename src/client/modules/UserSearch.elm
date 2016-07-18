@@ -93,7 +93,7 @@ view model =
     div []
         [ input
             [ type' "text"
-            , placeholder "Twitter username"
+            , placeholder "Type in a twitter username..."
             , value model.userSearchInput
             , class "user-search-input"
             , onInput UpdateUserSearch
@@ -107,7 +107,7 @@ view model =
                     []
 
                 Loading ->
-                    [ div [ class "loading" ] [ text "Loading..." ] ]
+                    [ div [ class "loading" ] [ text "Loading user ..." ] ]
 
                 Failure _ ->
                     [ div [ class "no-user-found" ] [ text "No user found" ] ]
