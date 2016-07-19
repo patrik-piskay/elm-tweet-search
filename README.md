@@ -2,6 +2,8 @@
 
 Search in tweets of a selected user - simple app created for purpose of learning [Elm](http://elm-lang.org)
 
+[Demo](https://tweet-search-aidvrcrmuq.now.sh/)
+
 -----------------------------------
 
 ### How to start
