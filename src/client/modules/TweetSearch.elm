@@ -28,7 +28,7 @@ model : Model
 model =
     { user = Nothing
     , tweetSearchInput = ""
-    , tweets = Loading
+    , tweets = NotAsked
     , filteredTweets = []
     }
 
@@ -62,7 +62,7 @@ update action model =
         SetUser user ->
             let
                 newModel =
-                    { model | user = Just user }
+                    { model | user = Just user, tweets = Loading }
             in
                 ( newModel, getTweets user )
 

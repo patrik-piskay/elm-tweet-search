@@ -1,10 +1,10 @@
 import Elm from './Main.elm';
 import { search } from './js';
 
-const app = Elm.App.fullscreen();
+const TweetSearchApp = Elm.App.fullscreen();
 
-app.ports.filterTweets.subscribe(([tweets, searchTerm]) => {
+TweetSearchApp.ports.filterTweets.subscribe(([tweets, searchTerm]) => {
     const filteredTweets = search(tweets, searchTerm);
 
-    app.ports.filteredTweets.send(filteredTweets);
+    TweetSearchApp.ports.filteredTweets.send(filteredTweets);
 });

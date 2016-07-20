@@ -93,15 +93,14 @@ view model =
     div []
         [ input
             [ type' "text"
-            , placeholder "Type in a twitter username..."
+            , placeholder "Type in a twitter username and press enter"
             , value model.userSearchInput
             , class "user-search-input"
             , onInput UpdateUserSearch
             , on "keypress" (Json.map (always SearchUser) (Json.customDecoder keyCode isEnter))
             ]
             []
-        , ul
-            [ class "user-results" ]
+        , div []
             (case model.user of
                 NotAsked ->
                     []
@@ -113,16 +112,8 @@ view model =
                     [ div [ class "no-user-found" ] [ text "No user found" ] ]
 
                 Success user ->
-                    [ li [] [ renderUserRecord user ] ]
+                    []
             )
-        ]
-
-
-renderUserRecord : UserModel -> Html Action
-renderUserRecord user =
-    div []
-        [ img [ src user.profileImg ] []
-        , span [] [ text user.name ]
         ]
 
 

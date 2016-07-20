@@ -45,43 +45,6 @@ html, body {
     text-align: center;
 }
 
-ul.user-results {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-ul.user-results li {
-    dispay: block;
-    width: 100%;
-    padding: 10px 0;
-    font-size: 1.5em;
-    text-align: center;
-    cursor: pointer;
-    background-color: #F9F9F9;
-    border: 1px solid #C7C7C7;
-    border-top: none;
-    color: #4E4E4E;
-}
-
-ul.user-results li img {
-    border-radius: 10px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-ul.user-results li span {
-    display: inline-block;
-    position: relative;
-    top: 2px;
-    padding-left: 10px;
-}
-
-ul.user-results li:hover {
-    background-color: #55acee;
-    color: white;
-}
-
 .no-user-found,
 .no-tweets-found {
     text-align: center;

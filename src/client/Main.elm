@@ -13,16 +13,23 @@ type alias Model =
     }
 
 
-model : Model
-model =
-    { userSearch = fst UserSearch.init
-    , tweetSearch = fst TweetSearch.init
-    }
-
-
 init : ( Model, Cmd Action )
 init =
-    ( model, Cmd.none )
+    let
+        ( userModel, userCmd ) =
+            UserSearch.init
+
+        ( tweetModel, tweetCmd ) =
+            TweetSearch.init
+    in
+        ( { userSearch = userModel
+          , tweetSearch = tweetModel
+          }
+        , Cmd.batch
+            [ Cmd.map User userCmd
+            , Cmd.map Tweets tweetCmd
+            ]
+        )
 
 
 type Action
